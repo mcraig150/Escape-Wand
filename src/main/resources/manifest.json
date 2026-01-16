@@ -1,6 +1,6 @@
 {
-    "Group": "Example",
-    "Name": "ExamplePlugin",
+    "Group": "mcraig150",
+    "Name": "Escape Wand",
     "Version": "0.0.2",
     "Description": "An example plugin for HyTale!",
     "Authors": [
@@ -17,6 +17,6 @@
         
     },
     "DisabledByDefault": false,
-    "Main": "org.example.plugin.ExamplePlugin",
+    "Main": "org.mcraig150.EscapeWand.EscapeWand",
     "IncludesAssetPack": true
 }

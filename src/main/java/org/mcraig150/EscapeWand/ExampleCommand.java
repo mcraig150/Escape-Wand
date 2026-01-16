@@ -1,4 +1,4 @@
-package org.example.plugin;
+package org.mcraig150.EscapeWand;
 
 import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.Message;
