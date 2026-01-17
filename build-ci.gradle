@@ -1,0 +1,70 @@
+// CI-specific build configuration for Escape-Wand
+// Usage: ./gradlew -b build-ci.gradle build
+//
+// Requires HytaleServer.jar to be provided via one of:
+// 1. Place in libs/ directory (default)
+// 2. Set property: ./gradlew -b build-ci.gradle build -Phytale_server_jar=/path/to/HytaleServer.jar
+
+plugins {
+    id 'java'
+}
+
+ext {
+    // Path to HytaleServer.jar for CI builds
+    hytaleServerJar = project.hasProperty('hytale_server_jar') 
+        ? project.findProperty('hytale_server_jar') 
+        : "$projectDir/libs/HytaleServer.jar"
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version)
+    withSourcesJar()
+    withJavadocJar()
+}
+
+javadoc {
+    options.addStringOption('Xdoclint:-missing', '-quiet')
+}
+
+dependencies {
+    if (!file(hytaleServerJar).exists()) {
+        println "ERROR: HytaleServer.jar not found at $hytaleServerJar"
+        println "Please provide HytaleServer.jar in libs/ directory or via -Phytale_server_jar property"
+    }
+    implementation(files(hytaleServerJar))
+}
+
+// Updates the manifest.json file with version info
+tasks.register('updatePluginManifest') {
+    def manifestFile = file('src/main/resources/manifest.json')
+    doLast {
+        if (!manifestFile.exists()) {
+            throw new GradleException("Could not find manifest.json at ${manifestFile.path}!")
+        }
+        def manifestJson = new groovy.json.JsonSlurper().parseText(manifestFile.text)
+        manifestJson.Version = version
+        manifestJson.IncludesAssetPack = includes_pack.toBoolean()
+        manifestFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifestJson))
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn 'updatePluginManifest'
+}
+
+// Print build info at start
+tasks.register('ciBuildInfo') {
+    doLast {
+        println "=== CI Build Info ==="
+        println "Project: ${project.name}"
+        println "Version: ${project.version}"
+        println "Java Version: ${java_version}"
+        println "HytaleServer.jar: ${hytaleServerJar}"
+        println "HytaleServer.jar exists: ${file(hytaleServerJar).exists()}"
+        println "===================="
+    }
+}
+
+tasks.named('build') {
+    dependsOn 'ciBuildInfo'
+}
